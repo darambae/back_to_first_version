@@ -1,0 +1,94 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   life_cycle.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dabae <dabae@student.42perpignan.fr>       +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/04/12 10:25:19 by dabae             #+#    #+#             */
+/*   Updated: 2024/05/03 18:16:04 by dabae            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "../philo.h"
+
+static int	eat_phase(t_philo *philo)
+{
+	take_forks(philo);
+	change_state(philo, EAT);
+	print(philo, " is eating");
+	put_down_forks(philo);
+	return (0);
+}
+
+static void	sleep_phase(t_philo *philo)
+{
+	change_state(philo, SLEEP);
+	print(philo, " is sleeping");
+	ft_usleep(philo->param->time_to_sleep);
+}
+
+static void	think_phase(t_philo *philo)
+{
+	change_state(philo, THINK);
+	print(philo, " is thinking");
+}
+
+void	*life_start(void *philo)
+{
+	t_philo	*phi;
+
+	phi = (t_philo *)philo;
+	phi->time_limit_to_death = get_time() + phi->param->time_to_die;
+	if (pthread_create(&phi->thread, NULL, &anyone_dead, phi) != 0)
+		return ((void *)1);
+	while (phi->state != DEAD && phi->state != FULL)
+	{
+		eat_phase(phi);
+		pthread_mutex_lock(&phi->lock);
+		if (phi->param->stop)
+		{
+			pthread_mutex_unlock(&phi->lock);
+			break ;	
+		}
+		pthread_mutex_unlock(&phi->lock);
+		sleep_phase(phi);
+		pthread_mutex_lock(&phi->lock);			
+		if (phi->param->stop)
+		{
+			pthread_mutex_unlock(&phi->lock);
+			break ;	
+		}
+		pthread_mutex_unlock(&phi->lock);
+		think_phase(phi);
+	}
+	if (pthread_join(phi->thread, NULL) != 0)
+		return ((void *)1);
+	return ((void *)0);
+}
+
+int	life_cycle(t_param *param)
+{
+	pthread_t	thread;
+	int			i;
+
+	if (param->num_must_eat > 0)
+		pthread_create(&thread, NULL, &is_everyone_full, param);
+	i = -1;
+	while (++i < param->num_philo)
+	{
+		if (pthread_create(&param->tids[i], NULL, &life_start,
+				&param->philo[i]) != 0)
+			return (1);
+		ft_usleep(1);
+	}
+	i = -1;
+	while (++i < param->num_philo)
+	{
+		if (pthread_join(param->tids[i], NULL))
+			return (1);
+	}
+	if (param->num_must_eat > 0)
+		pthread_join(thread, NULL);
+	return (0);
+}
