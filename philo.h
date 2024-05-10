@@ -6,7 +6,7 @@
 /*   By: dabae <dabae@student.42perpignan.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 10:41:34 by dabae             #+#    #+#             */
-/*   Updated: 2024/04/25 09:02:16 by dabae            ###   ########.fr       */
+/*   Updated: 2024/05/10 16:56:02 by dabae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ typedef struct s_param
 	uint64_t		time_to_die;
 	uint64_t		time_to_eat;
 	uint64_t		time_to_sleep;
+	uint64_t		simul_start;
 
 	struct s_philo	*philo;
 	pthread_t		*tids;
@@ -78,5 +79,6 @@ void		*is_everyone_full(void *param);
 void		*anyone_dead(void *philo);
 void		print(t_philo *philo, char *str);
 void		change_state(t_philo *philo, int state);
+int			check_stop(t_philo *philo);
 
 #endif

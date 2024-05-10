@@ -6,7 +6,7 @@
 /*   By: dabae <dabae@student.42perpignan.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 14:42:55 by dabae             #+#    #+#             */
-/*   Updated: 2024/04/25 09:11:30 by dabae            ###   ########.fr       */
+/*   Updated: 2024/05/10 16:55:50 by dabae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ void	init_param(t_param *param, char **args)
 		pthread_mutex_init(&param->lock, NULL);
 		param->stop = 0;
 		param->num_full = 0;
+		param->simul_start = 0;
 		param->num_philo = (int) ft_atoi(args[0]);
 		param->time_to_die = (uint64_t) ft_atoi(args[1]);
 		param->time_to_eat = (uint64_t) ft_atoi(args[2]);
@@ -71,11 +72,11 @@ int	init_philo(t_param *param)
 	i = -1;
 	while (++i < param->num_philo)
 	{
-		param->philo[i].id = i;
+		param->philo[i].id = i + 1;
 		param->philo[i].param = param;
 		param->philo[i].num_eat = 0;
 		param->philo[i].state = -1;
-		param->philo[i].time_limit_to_death = get_time() + param->time_to_die;
+		param->philo[i].time_limit_to_death = 0;
 		param->philo[i].left_fork = &param->forks[i];
 		if (param->num_philo == 1)
 			param->philo[0].right_fork = NULL;

@@ -6,7 +6,7 @@
 /*   By: dabae <dabae@student.42perpignan.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 13:48:17 by dabae             #+#    #+#             */
-/*   Updated: 2024/04/25 09:03:05 by dabae            ###   ########.fr       */
+/*   Updated: 2024/05/10 16:19:00 by dabae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,12 +27,38 @@ void	change_state(t_philo *philo, int state)
 	pthread_mutex_unlock(&philo->lock);
 }
 
+int	check_stop(t_philo *philo)
+{
+	pthread_mutex_lock(&philo->param->lock);
+	if (philo->param->stop)
+	{
+		pthread_mutex_unlock(&philo->param->lock);
+		return (1);
+	}
+	pthread_mutex_unlock(&philo->param->lock);
+	pthread_mutex_lock(&philo->lock);
+	if (philo->state == DEAD)
+	{
+		pthread_mutex_unlock(&philo->lock);
+		return (1);
+	}
+	pthread_mutex_unlock(&philo->lock);
+	return (0);
+}
+
 /*By taking forks, start to eat*/
 void	take_forks(t_philo *philo)
 {
-	pthread_mutex_lock(philo->right_fork);
-	pthread_mutex_lock(philo->left_fork);
-	print(philo, " has taken both forks");
+	if (philo->id % 2 == 0)
+		pthread_mutex_lock(philo->right_fork);
+	else
+		pthread_mutex_lock(philo->left_fork);
+	if (philo->id % 2 == 0)
+		pthread_mutex_lock(philo->left_fork);
+	else
+		pthread_mutex_lock(philo->right_fork);
+	if (!check_stop(philo))
+		print(philo, "has taken a fork");
 }
 
 /*by putting down forks, stop eating*/
@@ -47,8 +73,7 @@ void	put_down_forks(t_philo *philo)
 		philo->param->num_full++;
 		pthread_mutex_unlock(&philo->param->lock);
 	}
-	ft_usleep(philo->param->time_to_eat);
 	pthread_mutex_unlock(&philo->lock);
-	pthread_mutex_unlock(philo->left_fork);
 	pthread_mutex_unlock(philo->right_fork);
+	pthread_mutex_unlock(philo->left_fork);
 }

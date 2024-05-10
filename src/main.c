@@ -6,7 +6,7 @@
 /*   By: dabae <dabae@student.42perpignan.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 10:42:53 by dabae             #+#    #+#             */
-/*   Updated: 2024/04/22 16:47:24 by dabae            ###   ########.fr       */
+/*   Updated: 2024/05/10 17:04:10 by dabae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,8 @@
 void	print(t_philo *philo, char *str)
 {
 	pthread_mutex_lock(&philo->param->print);
-	printf("At %lu, Philosopher no.%d %s.\n", get_time(), philo->id, str);
+	printf("%lu %d %s\n", get_time() - philo->param->simul_start, \
+		philo->id, str);
 	pthread_mutex_unlock(&philo->param->print);
 }
 
@@ -56,6 +57,7 @@ void	ft_exit(t_param *param, int err, char *msg)
 
 static void	only_one_philo(t_param *param)
 {
+	param->simul_start = get_time();
 	pthread_create(&param->tids[0], NULL, &anyone_dead, &param->philo[0]);
 	pthread_join(param->tids[0], NULL);
 	while (param->stop == 0)
